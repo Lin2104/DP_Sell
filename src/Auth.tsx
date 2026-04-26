@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useGoogleLogin } from '@react-oauth/google';
 import { getFullImageUrl } from './utils/imageUtils';
 import { Mail, Lock, User, ArrowLeft } from 'lucide-react';
 
@@ -38,11 +39,36 @@ const Auth = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // In a real production app, use @react-oauth/google
-    // For now, simulate Google login for UI demonstration
-    setError("Google Login requires client ID configuration. Please set VITE_GOOGLE_CLIENT_ID.");
-  };
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch user info from Google using the access token
+        const userInfo = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${tokenResponse.access_token}` },
+        });
+
+        // Send user info to backend
+        const res = await axios.post(`${API_BASE_URL}/auth/google`, {
+          email: userInfo.data.email,
+          name: userInfo.data.name,
+          googleId: userInfo.data.sub,
+          avatar: userInfo.data.picture,
+          token: tokenResponse.access_token
+        });
+
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        navigate('/');
+      } catch (err: any) {
+        setError(err.response?.data?.error || 'Google Login failed');
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => setError('Google Login Failed')
+  });
 
   return (
     <div className="min-h-screen bg-[#0a0f18] flex items-center justify-center p-4">
