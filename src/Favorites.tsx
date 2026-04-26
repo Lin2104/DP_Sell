@@ -16,7 +16,6 @@ const Favorites: React.FC = () => {
   const [favoriteGames, setFavoriteGames] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     const savedFavs = localStorage.getItem('favorites');
@@ -27,9 +26,6 @@ const Favorites: React.FC = () => {
     } else {
       setLoading(false);
     }
-
-    const savedCart = localStorage.getItem('cart');
-    if (savedCart) setCartCount(JSON.parse(savedCart).length);
   }, []);
 
   const fetchFavoriteGames = async (ids: string[]) => {
