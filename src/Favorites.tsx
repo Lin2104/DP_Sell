@@ -71,7 +71,6 @@ const Favorites: React.FC = () => {
       addedAt: new Date() 
     });
     localStorage.setItem('cart', JSON.stringify(cart));
-    setCartCount(cart.length);
   };
 
   return (
